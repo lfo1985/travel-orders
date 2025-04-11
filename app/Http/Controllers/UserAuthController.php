@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginUserRequest;
 use App\Http\Requests\LogoutUserRequest;
-use App\Repositories\Token\TokenRepository;
+use App\Repositories\Token\SanctumRepository;
 use App\Repositories\User\UserRepository;
-use App\Services\Token\TokenService;
 use App\Services\User\AuthService;
 use Illuminate\Auth\AuthenticationException;
 
@@ -17,9 +16,8 @@ class UserAuthController extends Controller
     ) {
         $this->authService = new AuthService(
             new UserRepository(),
-            new TokenRepository(),
-            new TokenService()
-        );   
+            new SanctumRepository()
+        );
     }
 
     public function login(LoginUserRequest $request)
@@ -29,7 +27,7 @@ class UserAuthController extends Controller
 
             return sendSuccess(
                 200,
-                'Logged in successfully', 
+                'Logged in successfully',
                 [
                     'token' => data_get($login, 'token'),
                     'user' => data_get($login, 'user')

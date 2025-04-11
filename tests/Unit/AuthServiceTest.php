@@ -2,10 +2,8 @@
 
 namespace Tests\Unit;
 
-use App\Models\User;
-use App\Repositories\Token\TokenRepository;
+use App\Repositories\Token\SanctumRepository;
 use App\Repositories\User\UserRepository;
-use App\Services\Token\TokenService;
 use App\Services\User\AuthService;
 use Illuminate\Auth\AuthenticationException;
 use Tests\TestCase;
@@ -16,8 +14,7 @@ class AuthServiceTest extends TestCase
     {
         return new AuthService(
             $this->createMock(UserRepository::class),
-            $this->createMock(TokenRepository::class),
-            $this->createMock(TokenService::class)
+            $this->createMock(SanctumRepository::class)
         );
     }
 
@@ -44,8 +41,7 @@ class AuthServiceTest extends TestCase
 
         $authService = new AuthService(
             $mockUserRepository,
-            $this->createMock(TokenRepository::class),
-            $this->createMock(TokenService::class)
+            $this->createMock(SanctumRepository::class)
         );
 
         try {
