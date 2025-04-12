@@ -1,24 +1,23 @@
 <?php
 
+use Illuminate\Database\Eloquent\Collection;
+
 if (!function_exists('except')) {
     /**
-     * Throw an exception with a message and optional class and data.
+     * Throw an exception with a custom message and code.
      * 
      * @param string $message
+     * @param int $code
      * @param string $class
-     * @param array $data
-     * @return void
+     * @throws \Exception
      */
-    function except(string $message, string $class = '', array $data = [])
+    function except(string $message, int $code, string $class = '')
     {
         if ($class == '') {
             $class = Exception::class;
+            $code = 500;
         }
-        if (count($data)) {
-            throw new $class($message, $data);
-        } else {
-            throw new $class($message);
-        }
+        throw new $class($message, $code);
     }
 }
 
@@ -80,6 +79,27 @@ if(!function_exists('sendSuccess'))
     }
 }
 
+if(!function_exists('sendData')) 
+{
+    /**
+     * Send a data response in JSON format.
+     * 
+     * @param int $code
+     * @param array|Collection $data
+     * @return \Illuminate\Http\JsonResponse
+     */
+    function sendData($data, int $code = 200): \Illuminate\Http\JsonResponse
+    {
+        return response()->json(
+            [
+                'success' => true,
+                'data' => $data
+            ],
+            $code
+        );
+    }
+}
+
 if (!function_exists('padLeft')) {
     /**
      * Pad a string on the left side with a specified character to a specified length.
@@ -92,5 +112,16 @@ if (!function_exists('padLeft')) {
     function padLeft(string $value, string $pad, int $length)
     {
         return \Illuminate\Support\Str::of($value)->padLeft($length, $pad);
+    }
+}
+
+if (!function_exists('dateFormat')) {
+    function dateFormat(string $date): string
+    {
+        if(\Illuminate\Support\Str::contains($date, '/')) {
+            list($day, $month, $year) = explode('/', $date);
+            $date = $year . '-' . $month . '-' . $day;
+        }
+        return $date;
     }
 }

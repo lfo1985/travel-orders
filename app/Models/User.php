@@ -47,4 +47,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * The attributes that should be appended to the model's array form.
+     *
+     * @param string $value
+     */
+    public function scopeByEmail($query, string $email)
+    {
+        return $query->where('email', $email);
+    }
 }

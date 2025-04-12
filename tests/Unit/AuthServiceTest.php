@@ -2,10 +2,12 @@
 
 namespace Tests\Unit;
 
+use App\Exceptions\AuthEmailNotFoundException;
+use App\Exceptions\AuthLoginInvalidException;
+use App\Models\User;
 use App\Repositories\Token\SanctumRepository;
 use App\Repositories\User\UserRepository;
 use App\Services\User\AuthService;
-use Illuminate\Auth\AuthenticationException;
 use Tests\TestCase;
 
 class AuthServiceTest extends TestCase
@@ -20,12 +22,10 @@ class AuthServiceTest extends TestCase
 
     public function test_return_error_where_password_and_hash_no_match(): void
     {
-        try {
-            $this->mockAuthService()->checkPassword('admin123', '$2y$12$Op9ILYx7PzqY2J8OCBISxe8HL1GoHU/kfxO4k.bpkXk/bYBUXbSgy');
-        } catch (AuthenticationException $e) {
-            $this->assertInstanceOf(AuthenticationException::class, $e);
-            $this->assertEquals('Login is invalid.', $e->getMessage());
-        }
+        $this->expectException(AuthLoginInvalidException::class);
+        $this->expectExceptionMessage('Login is invalid.');
+        $this->expectExceptionCode(401);
+        $this->mockAuthService()->checkPassword('admin123', '$2y$12$Op9ILYx7PzqY2J8OCBISxe8HL1GoHU/kfxO4k.bpkXk/bYBUXbSgy');
     }
 
     public function test_return_void_where_match_password_and_hash(): void
@@ -44,11 +44,26 @@ class AuthServiceTest extends TestCase
             $this->createMock(SanctumRepository::class)
         );
 
-        try {
-            $authService->checkEmail('test@test');
-        } catch (AuthenticationException $e) {
-            $this->assertInstanceOf(AuthenticationException::class, $e);
-            $this->assertEquals('E-mail not found.', $e->getMessage());
-        }
+        $this->expectException(AuthEmailNotFoundException::class);
+        $this->expectExceptionMessage('E-mail not found.');
+        $this->expectExceptionCode(401);
+        $authService->checkEmail('test@test');
+    }
+
+    public function test_email_exists_where_login(): void
+    {
+        $mockUserRepository = $this->createMock(UserRepository::class);
+        $mockUserRepository->method('findByEmail')->willReturn(new User([
+            'email' => 'test@test'
+        ]));
+
+        $authService = new AuthService(
+            $mockUserRepository,
+            $this->createMock(SanctumRepository::class)
+        );
+
+        $user = $authService->checkEmail('test@test');
+
+        $this->assertEquals('test@test', $user->email);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Services\User;
 
+use App\Exceptions\AuthEmailNotFoundException;
+use App\Exceptions\AuthLoginInvalidException;
 use App\Models\User;
 use App\Repositories\Token\SanctumRepository;
 use App\Repositories\User\UserRepository;
@@ -31,7 +33,6 @@ class AuthService
      * @param string $email
      * @param string $password
      * @return array
-     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function login(string $email, string $password): array
     {
@@ -65,9 +66,9 @@ class AuthService
      * @param string $email
      * @param string $password
      * @return User
-     * @throws \Illuminate\Auth\AuthenticationException
+     * @throws AuthenticationException|AuthEmailNotFoundException
      */
-    public function checkUser($email, $password): User
+    public function checkUser(string $email, string $password): User
     {
         $user = $this->checkEmail($email);
         $this->checkPassword($password, data_get($user, 'password'));
@@ -79,14 +80,14 @@ class AuthService
      *
      * @param string $email
      * @return User
-     * @throws \Illuminate\Auth\AuthenticationException
+     * @throws AuthEmailNotFoundException
      */
     public function checkEmail(string $email): User
     {
         $user = $this->userRepository->findByEmail($email);
 
         if(!$user) {
-            except('E-mail not found.', AuthenticationException::class);
+            except('E-mail not found.', 401, AuthEmailNotFoundException::class);
         }
 
         return $user;
@@ -98,12 +99,12 @@ class AuthService
      * @param string $password
      * @param string $hashedPassword
      * @return void
-     * @throws \Illuminate\Auth\AuthenticationException
+     * @throws AuthLoginInvalidException
      */
-    public function checkPassword(string $password, string $hashedPassword)
+    public function checkPassword(string $password, string $hashedPassword): void
     {
         if (!Hash::check($password, $hashedPassword)) {
-            except('Login is invalid.', AuthenticationException::class);
+            except('Login is invalid.', 401, AuthLoginInvalidException::class);
         }
     }
 }
