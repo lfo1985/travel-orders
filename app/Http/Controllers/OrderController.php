@@ -4,38 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Enums\StatusOrderEnum;
 use App\Exceptions\OrderNotFoundException;
+use App\Exceptions\UpdateOrderStatusUnauthorizedException;
+use App\Exceptions\UpdateStatusOrderFailedException;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
+use App\Http\Requests\UpdateStatusOrderRequest;
 use App\Http\Resources\OrderCollection;
 use App\Http\Resources\ShowOrderResource;
 use App\Services\Order\OrderService;
+use App\Services\Order\SendEmailUpdateStatusService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
     public function __construct(
-        private OrderService $orderService
-    ) {
-        $this->orderService = $orderService;
-    }
+        private OrderService $orderService,
+        private SendEmailUpdateStatusService $sendEmailUpdateStatusService
+    ) {}
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $filters = [];
-
-        if(data_get($request, 'status')) {
-            Arr::set($filters, 'status', StatusOrderEnum::from(data_get($request, 'status')));
-        }
-
-        if(data_get($request, 'user_id')) {
-            Arr::set($filters, 'user_id', data_get($request, 'user_id'));
-        }
-
-        return sendData(new OrderCollection($this->orderService->getAllOrders($filters)));
+        return sendData(new OrderCollection($this->orderService->getAllOrders($request)));
     }
 
     /**
@@ -44,8 +36,9 @@ class OrderController extends Controller
     public function store(StoreOrderRequest $request)
     {
         try {
-            $order = $this->orderService->createOrder($request->validated());
-            return sendSuccess(200, 'Order created successfully.', ['order' => $order]);
+            $this->orderService->createOrder($request->validated());
+
+            return sendSuccess(200, 'Order created successfully.');
         } catch (\Throwable $th) {
             Log::error($th->getMessage());
             return sendError(500, 'Error creating order.');
@@ -59,6 +52,7 @@ class OrderController extends Controller
     {
         try {
             $order = $this->orderService->getOrderById($id);
+
             return sendData(new ShowOrderResource($order));
         } catch (OrderNotFoundException $e) {
             return sendError($e->getCode(), $e->getMessage());
@@ -74,8 +68,9 @@ class OrderController extends Controller
     public function update(UpdateOrderRequest $request, int $id)
     {
         try {
-            $order = $this->orderService->updateOrder($id, $request->validated());
-            return sendSuccess(200, 'Order updated successfully.', ['order' => $order]);
+            $this->orderService->updateOrder($id, $request->validated());
+
+            return sendSuccess(200, 'Order updated successfully.');
         } catch (OrderNotFoundException $e) {
             return sendError($e->getCode(), $e->getMessage());
         } catch (\Throwable $th) {
@@ -91,12 +86,39 @@ class OrderController extends Controller
     {
         try {
             $this->orderService->deleteOrder($id);
+
             return sendSuccess(200, 'Order deleted successfully.');
         } catch (OrderNotFoundException $e) {
             return sendError($e->getCode(), $e->getMessage());
         } catch (\Throwable $th) {
             Log::error($th->getMessage());
             return sendError(500, 'Error deleting order.');
+        }
+    }
+
+    public function updateStatus(UpdateStatusOrderRequest $request, int $id)
+    {
+        try {
+            $authId = $request->headers->get('auth_id');
+            $status = StatusOrderEnum::from(data_get($request, 'status'));
+
+            $updateStatus = $this->orderService->updateStatus($id, $status, $authId);
+
+            $oldStatus = data_get($updateStatus, 'old_status');
+            $newStatus = data_get($updateStatus, 'new_status');
+
+            $this->sendEmailUpdateStatusService->sendEmail(
+                data_get($updateStatus, 'order'),
+                $oldStatus,
+                $newStatus
+            );
+
+            return sendSuccess(200, 'Order status updated successfully.');
+        } catch (UpdateOrderStatusUnauthorizedException | UpdateStatusOrderFailedException | OrderNotFoundException $e) {
+            return sendError($e->getCode(), $e->getMessage());
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage());
+            return sendError(500, 'Error updating order status.');
         }
     }
 }

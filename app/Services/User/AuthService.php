@@ -22,10 +22,7 @@ class AuthService
     public function __construct(
         private UserRepository $userRepository,
         private SanctumRepository $sanctumRepository
-    ) {
-        $this->userRepository = $userRepository;
-        $this->sanctumRepository = $sanctumRepository;
-    }
+    ) {}
 
     /**
      * Login a user with the given email and password.
@@ -37,6 +34,7 @@ class AuthService
     public function login(string $email, string $password): array
     {
         $user = $this->checkUser($email, $password);
+        $this->sanctumRepository->delete($user);
 
         return [
             'token' => $this->sanctumRepository->create($user),

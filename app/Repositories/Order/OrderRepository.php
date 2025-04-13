@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Order;
 
+use App\Enums\StatusOrderEnum;
 use App\Models\Order;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -21,12 +22,35 @@ class OrderRepository
     {
         if(Arr::has($filters, 'status')) {
             $status = Arr::get($filters, 'status');
-            $order = $order->byStatus($status);
+            $order = $order->byStatus(StatusOrderEnum::from($status));
         }
 
         if(Arr::has($filters, 'user_id')) {
             $userId = Arr::get($filters, 'user_id');
             $order = $order->byUserId($userId);
+        }
+
+        if(Arr::has($filters, 'destination_name')) {
+            $destinantionName = Arr::get($filters, 'destination_name');
+            $order = $order->byDestinationName($destinantionName);
+        }
+
+        if(Arr::has($filters, 'departure_date_start') && Arr::has($filters, 'departure_date_end')) {
+            $departureDateStart = dateFormat(Arr::get($filters, 'departure_date_start'));
+            $departureDateEnd = dateFormat(Arr::get($filters, 'departure_date_end'));
+            $order = $order->byDepartureDate($departureDateStart, $departureDateEnd);
+        }
+
+        if(Arr::has($filters, 'return_date_start') && Arr::has($filters, 'return_date_end')) {
+            $returnDateStart = dateFormat(Arr::get($filters, 'return_date_start'));
+            $returnDateEnd = dateFormat(Arr::get($filters, 'return_date_end'));
+            $order = $order->byReturnDate($returnDateStart, $returnDateEnd);
+        }
+
+        if(Arr::has($filters, 'travel_departure_date') && Arr::has($filters, 'travel_return_date')) {
+            $travelDepartureDate = dateFormat(Arr::get($filters, 'travel_departure_date'));
+            $travelReturnDate = dateFormat(Arr::get($filters, 'travel_return_date'));
+            $order = $order->byTravelDateRange($travelDepartureDate, $travelReturnDate);
         }
 
         return $order;
@@ -50,7 +74,7 @@ class OrderRepository
      */
     public function getById(int $id): ?Order
     {
-        return Order::find($id);
+        return Order::with('user')->find($id);
     }
 
     /**
@@ -71,14 +95,16 @@ class OrderRepository
      * @param array $data
      * @return Order|null
      */
-    public function update(int $id, array $data): Order|null
+    public function update(int $id, array $data): ?Order
     {
-        $order = Order::find($id);
-        if ($order) {
-            $order->update($data);
-            return $order;
+        $order = $this->getById($id);
+
+        if ($order->update($data)) {
+            return new Order($data);
         }
+
         return null;
+
     }
 
     /**

@@ -73,7 +73,9 @@ class Order extends Model
     }
 
     /**
-     * Format the status to a human-readable string when accessed.
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param StatusOrderEnum $status
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeByStatus($query, StatusOrderEnum $status)
     {
@@ -81,10 +83,61 @@ class Order extends Model
     }
 
     /**
-     * Format the status to a human-readable string when accessed.
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $id
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeByUserId($query, int $id)
     {
         return $query->where('user_id', $id);
+    }
+
+    /**
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $destinationName
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByDestinationName($query, string $destinationName)
+    {
+        return $query->where('destination_name', 'LIKE', '%' . Str::lower($destinationName) . '%');
+    }
+
+    /**
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $dateStart
+     * @param string $dateEnd
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByDepartureDate($query, string $dateStart, string $dateEnd)
+    {
+        return $query
+            ->where('departure_date', '>=', $dateStart)
+            ->where('departure_date', '<=', $dateEnd);
+    }
+
+    /**
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $dateStart
+     * @param string $dateEnd
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByReturnDate($query, string $dateStart, string $dateEnd)
+    {
+        return $query
+            ->where('return_date', '>=', $dateStart)
+            ->where('return_date', '<=', $dateEnd);
+    }
+
+    /**
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $departureDate
+     * @param string $returnDate
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByTravelDateRange($query, string $departureDate, string $returnDate)
+    {
+        return $query
+            ->where('departure_date', '>=', $departureDate)
+            ->where('return_date', '<=', $returnDate);
     }
 }

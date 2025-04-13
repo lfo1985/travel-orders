@@ -6,7 +6,7 @@ use App\Exceptions\OrderNotFoundException;
 use App\Models\Order;
 use App\Repositories\Order\OrderRepository;
 use App\Services\Order\OrderService;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Tests\TestCase;
 
@@ -77,6 +77,7 @@ class OrderServiceTest extends TestCase
     public function test_return_order_object_where_success_in_the_update_order(): void
     {
         $orderData = [
+            'id' => 1,
             'user_id' => 1,
             'costumer_name' => 'John Doe',
             'destination_name' => 'New York',
@@ -85,6 +86,11 @@ class OrderServiceTest extends TestCase
         ];
 
         $mockOrderRepository = $this->createMock(OrderRepository::class);
+        $mockOrderRepository
+            ->expects($this->once())
+            ->method('getById')
+            ->with(1)
+            ->willReturn(new Order($orderData));
         $mockOrderRepository->method('update')->willReturn(new Order($orderData));
 
         $orderService = new OrderService($mockOrderRepository);
@@ -168,7 +174,7 @@ class OrderServiceTest extends TestCase
         $mockOrderRepository->method('getAll')->willReturn(new LengthAwarePaginator($orderData, 2, 50, 1));
 
         $orderService = new OrderService($mockOrderRepository);
-        $orders = $orderService->getAllOrders([]);
+        $orders = $orderService->getAllOrders(new Request());
 
         $this->assertIsObject($orders);
         $this->assertNotNull($orders);

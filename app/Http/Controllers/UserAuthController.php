@@ -11,15 +11,29 @@ use Illuminate\Auth\AuthenticationException;
 
 class UserAuthController extends Controller
 {
-    public function __construct(
-        private AuthService $authService
-    ) {
+    /**
+     * @var AuthService
+     */
+    private AuthService $authService;
+    /**
+     * UserAuthController constructor.
+     *
+     * @param AuthService $authService
+     */
+    public function __construct() {
         $this->authService = new AuthService(
             new UserRepository(),
             new SanctumRepository()
         );
     }
 
+    /**
+     * Login a user.
+     * 
+     * @param LoginUserRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws AuthenticationException
+     */
     public function login(LoginUserRequest $request)
     {
         try {
@@ -38,6 +52,13 @@ class UserAuthController extends Controller
         }
     }
 
+    /**
+     * Logout a user.
+     * 
+     * @param LogoutUserRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws AuthenticationException
+     */
     public function logout(LogoutUserRequest $request)
     {
         try {

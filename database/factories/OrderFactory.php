@@ -24,8 +24,8 @@ class OrderFactory extends Factory
             'user_id' => User::factory(),
             'costumer_name' => $this->faker->name(),
             'destination_name' => $this->faker->city(),
-            'departure_date' => $this->faker->dateTimeBetween('now', '+1 year'),
-            'return_date' => $this->faker->dateTimeBetween('+1 year', '+2 years'),
+            'departure_date' => $this->faker->dateTimeBetween('now', '+7 days')->format('Y-m-d'),
+            'return_date' => $this->faker->dateTimeBetween('+7 days', '+14 days')->format('Y-m-d'),
             'status' => $this->faker->randomElement([
                 StatusOrderEnum::REQUESTED->value,
                 StatusOrderEnum::APPROVED->value,

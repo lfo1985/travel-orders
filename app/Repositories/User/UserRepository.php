@@ -13,7 +13,7 @@ class UserRepository
      */
     public function getAll()
     {
-        return User::all();
+        return User::paginate(50);
     }
 
     /**
@@ -22,7 +22,7 @@ class UserRepository
      * @param int $id
      * @return User|null
      */
-    public function findById(int $id)
+    public function findById(int $id): ?User
     {
         return User::find($id);
     }
@@ -54,15 +54,17 @@ class UserRepository
      *
      * @param int $id
      * @param array $data
-     * @return bool
+     * @return User|null
      */
-    public function update($id, array $data)
+    public function update($id, array $data): ?User
     {
         $user = $this->findById($id);
-        if ($user) {
-            return $user->update($data);
+
+        if ($user->update($data)) {
+            return new User($data);
         }
-        return false;
+
+        return null;
     }
 
     /**
