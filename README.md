@@ -1,66 +1,248 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Aqui está a versão final do seu `README.md` com a **versão 1.0.0** e uma seção de **Licença (MIT)** adicionada no final. Tudo pronto para copiar e colar no seu repositório:
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+---
 
-## About Laravel
+```markdown
+# 📦 Travel Orders
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**Versão:** 1.0.0  
+Aplicação voltada para o gerenciamento de pedidos de viagens, oferecendo recursos como autenticação de usuários, controle de acesso e mecanismos de filtragem por status, destino e períodos de viagem.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Instalação da Aplicação
 
-## Learning Laravel
+1. Renomeie o arquivo `.env-example` para `.env`:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+   ```bash
+   mv .env-example .env
+   ```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+2. Instale as dependências do projeto:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+   ```bash
+   composer install
+   ```
 
-## Laravel Sponsors
+3. Construa e suba os containers com Docker:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+   ```bash
+   docker compose up
+   ```
 
-### Premium Partners
+4. Acesse o container `php_app` para rodar as migrações e popular o banco de dados:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+   ```bash
+   docker exec -it php_app bash
 
-## Contributing
+   # Cria as tabelas
+   php artisan migrate
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+   # Cria o primeiro usuário (senha: admin123456)
+   php artisan db:seed --class=UserSeeder
+   ```
 
-## Code of Conduct
+### (Opcional) Criar dados de teste
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Para popular a base com pedidos de viagem fictícios:
 
-## Security Vulnerabilities
+```bash
+php artisan db:seed --class=OrderSeeder
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+> **IMPORTANTE:** Todos os comandos acima devem ser executados **dentro do container**, pois o sistema está configurado para rodar via Docker.
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Autenticação
+
+### Login
+
+**POST** `/login`
+
+**Body:**
+
+```json
+{
+  "email": "usuario@example.com",
+  "password": "senha"
+}
+```
+
+### Logout
+
+**POST** `/logout`  
+**Headers:**
+
+```
+Authorization: Bearer {token}
+```
+
+---
+
+## 👤 Endpoints de Usuários
+
+### Listar todos os usuários
+
+**GET** `/users`  
+**Headers:** `Authorization: Bearer {token}`
+
+### Buscar usuário por ID
+
+**GET** `/users/{id}`  
+**Headers:** `Authorization: Bearer {token}`
+
+### Criar novo usuário
+
+**POST** `/users`  
+**Headers:** `Authorization: Bearer {token}`
+
+**Body:**
+
+```json
+{
+  "name": "Nome do Usuário",
+  "email": "email@example.com",
+  "password": "senha",
+  "password_confirmation": "senha"
+}
+```
+
+### Editar usuário
+
+**PUT** `/users/{id}`  
+**Headers:** `Authorization: Bearer {token}`
+
+**Body:**
+
+```json
+{
+  "name": "Novo Nome",
+  "password": "nova_senha",
+  "password_confirmation": "nova_senha"
+}
+```
+
+### Deletar usuário
+
+**DELETE** `/users/{id}`  
+**Headers:** `Authorization: Bearer {token}`
+
+---
+
+## Endpoints de Pedidos (Orders)
+
+### Listar todos os pedidos
+
+**GET** `/orders`  
+**Headers:** `Authorization: Bearer {token}`
+
+### Filtros disponíveis
+
+**GET** `/orders?{parametros}`  
+**Headers:** `Authorization: Bearer {token}`
+
+#### Por status
+
+```bash
+/orders?status=APPROVED
+```
+
+#### Por usuário
+
+```bash
+/orders?user_id=1
+```
+
+#### Por destino
+
+```bash
+/orders?destination_name=New+York
+```
+
+#### Por data de ida
+
+```bash
+/orders?departure_date_start=01/01/2025&departure_date_end=10/01/2025
+```
+
+#### Por data de retorno
+
+```bash
+/orders?return_date_start=01/01/2025&return_date_end=10/01/2025
+```
+
+#### Por intervalo de viagem
+
+```bash
+/orders?travel_departure_date=01/01/2025&travel_return_date=10/01/2025
+```
+
+---
+
+### Criar novo pedido
+
+**POST** `/order`  
+**Headers:** `Authorization: Bearer {token}`
+
+**Body:**
+
+```json
+{
+  "user_id": 1,
+  "costumer_name": "Nome do Cliente",
+  "destination_name": "Destino",
+  "departure_date": "01/01/2025",
+  "return_date": "10/01/2025",
+  "status": "REQUESTED"
+}
+```
+
+### Editar pedido
+
+**PUT** `/order/{id}`  
+**Headers:** `Authorization: Bearer {token}`
+
+**Body:**
+
+```json
+{
+  "costumer_name": "Novo Nome",
+  "destination_name": "Novo Destino",
+  "departure_date": "01/02/2025",
+  "return_date": "10/02/2025",
+  "status": "APPROVED"
+}
+```
+
+### Deletar pedido
+
+**DELETE** `/order/{id}`  
+**Headers:** `Authorization: Bearer {token}`
+
+---
+
+### Atualizar status do pedido
+
+**PATCH** `/orders/{id}/status`  
+**Headers:**
+
+```
+Authorization: Bearer {token}
+auth_id: {id do usuário logado}
+```
+
+**Body:**
+
+```json
+{
+  "status": "APPROVED"
+}
+```
+
+---
+
+## 📄 Licença
+
+Este projeto está licenciado sob os termos da licença MIT.  
+Veja o arquivo [LICENSE](LICENSE) para mais informações.

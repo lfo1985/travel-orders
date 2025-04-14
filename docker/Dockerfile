@@ -14,12 +14,7 @@ RUN a2enmod rewrite
 
 WORKDIR /var/www/html
 
-COPY . /var/www/html
-
-RUN curl -sS https://getcomposer.org/installer | php \
-    && mv composer.phar /usr/bin/composer
-
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+COPY ./../ /var/www/html
 
 CMD php artisan serve --host=0.0.0.0 --port=8000
 
