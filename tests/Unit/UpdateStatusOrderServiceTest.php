@@ -24,11 +24,11 @@ class UpdateStatusOrderServiceTest extends TestCase
             'departure_date' => '2023-10-01',
             'return_date' => '2023-10-10',
         ]));
-        
+
         $orderService = new OrderService($mockOrderRepository);
         $this->expectException(UpdateOrderStatusUnauthorizedException::class);
         $this->expectExceptionMessage('You cannot update your own order');
-        $this->expectExceptionCode(400);
+        $this->expectExceptionCode(403);
         $orderService->updateStatus(1, StatusOrderEnum::APPROVED, 1);
     }
 
@@ -55,7 +55,7 @@ class UpdateStatusOrderServiceTest extends TestCase
         $mockOrderRepository = $this->createMock(OrderRepository::class);
         $mockOrderRepository->method('getById')->willReturn($order);
         $mockOrderRepository->method('update')->willReturn($orderUpdate);
-        
+
         $orderService = new OrderService($mockOrderRepository);
         $order = $orderService->updateStatus(1, StatusOrderEnum::CANCELED, 1);
 
@@ -67,13 +67,13 @@ class UpdateStatusOrderServiceTest extends TestCase
     {
         $mockOrderRepository = $this->createMock(OrderRepository::class);
         $mockOrderRepository->method('getById')->willReturn(null);
-        
+
         $orderService = new OrderService($mockOrderRepository);
-        
+
         $this->expectException(OrderNotFoundException::class);
         $this->expectExceptionMessage('Order not found.');
         $this->expectExceptionCode(404);
-        
+
         $orderService->updateStatus(1, StatusOrderEnum::APPROVED, 1);
     }
 
@@ -89,13 +89,13 @@ class UpdateStatusOrderServiceTest extends TestCase
             'return_date' => '2023-10-10',
             'status' => StatusOrderEnum::REQUESTED,
         ]));
-        
+
         $orderService = new OrderService($mockOrderRepository);
-        
+
         $this->expectException(UpdateStatusOrderFailedException::class);
         $this->expectExceptionMessage('You can only update the order if the status is being changed to CANCELED or APPROVED');
         $this->expectExceptionCode(400);
-        
+
         $orderService->updateStatus(1, StatusOrderEnum::REQUESTED, 1);
     }
 
@@ -111,13 +111,13 @@ class UpdateStatusOrderServiceTest extends TestCase
             'return_date' => '2023-10-10',
             'status' => StatusOrderEnum::APPROVED,
         ]));
-        
+
         $orderService = new OrderService($mockOrderRepository);
-        
+
         $this->expectException(UpdateStatusOrderFailedException::class);
         $this->expectExceptionMessage('You cannot update the order to the same status');
         $this->expectExceptionCode(400);
-        
+
         $orderService->updateStatus(1, StatusOrderEnum::APPROVED, 1);
     }
 
@@ -132,13 +132,13 @@ class UpdateStatusOrderServiceTest extends TestCase
             'departure_date' => '2023-10-01',
             'return_date' => '2023-10-10',
         ]));
-        
+
         $orderService = new OrderService($mockOrderRepository);
-        
+
         $this->expectException(UpdateOrderStatusUnauthorizedException::class);
         $this->expectExceptionMessage('You are not authorized to update this order');
         $this->expectExceptionCode(401);
-        
+
         $orderService->updateStatus(1, StatusOrderEnum::APPROVED, 0);
     }
 
@@ -154,13 +154,13 @@ class UpdateStatusOrderServiceTest extends TestCase
             'return_date' => '2023-10-10',
             'status' => StatusOrderEnum::APPROVED,
         ]));
-        
+
         $orderService = new OrderService($mockOrderRepository);
-        
+
         $this->expectException(UpdateStatusOrderFailedException::class);
         $this->expectExceptionMessage('You cannot to CANCEL the order if the status is APPROVED');
         $this->expectExceptionCode(400);
-        
+
         $orderService->updateStatus(1, StatusOrderEnum::CANCELED, 1);
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Exceptions\OrderNotFoundException;
+use App\Exceptions\UpdateDeleteOrderException;
 use App\Models\Order;
 use App\Repositories\Order\OrderRepository;
 use App\Services\Order\OrderService;
@@ -179,5 +180,38 @@ class OrderServiceTest extends TestCase
         $this->assertIsObject($orders);
         $this->assertNotNull($orders);
         $this->assertCount(2, $orders);
+    }
+
+    public function test_update_only_own_order()
+    {
+        $mockOrderRepository = $this->createMock(OrderRepository::class);
+        $orderService = new OrderService($mockOrderRepository);
+        $order = new Order([
+            'user_id' => 1,
+            'costumer_name' => 'John Doe',
+            'destination_name' => 'New York',
+            'departure_date' => '2023-10-01',
+            'return_date' => '2023-10-10',
+        ]);
+        $orderService->checkAuth($order, 1);
+        $this->assertTrue(true);
+    }
+
+    public function test_throw_exception_where_update_order_is_not_allowed()
+    {
+        $mockOrderRepository = $this->createMock(OrderRepository::class);
+        $orderService = new OrderService($mockOrderRepository);
+        $order = new Order([
+            'user_id' => 1,
+            'costumer_name' => 'John Doe',
+            'destination_name' => 'New York',
+            'departure_date' => '2023-10-01',
+            'return_date' => '2023-10-10',
+        ]);
+        $this->expectException(UpdateDeleteOrderException::class);
+        $this->expectExceptionMessage('You can only edit or delete your own orders.');
+        $this->expectExceptionCode(403);
+
+        $orderService->checkAuth($order, 2);
     }
 }
