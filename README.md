@@ -19,10 +19,10 @@ Aplicação voltada para o gerenciamento de pedidos de viagens, oferecendo recur
    composer install
    ```
 
-3. Construa e suba os containers com Docker:
+3. Construa e suba os containers com Docker (forçar o build e rodar em segundo plano):
 
    ```bash
-   docker compose up
+   docker compose up --build -d
    ```
 
 4. Acesse o container `php_app` para rodar as migrações e popular o banco de dados:
@@ -67,11 +67,7 @@ php artisan db:seed --class=OrderSeeder
 ### Logout
 
 **POST** `/logout`  
-**Headers:**
-
-```
-Authorization: Bearer {token}
-```
+**Headers:** `Authorization: Bearer {token}`
 
 ---
 
@@ -236,6 +232,10 @@ auth_id: {id do usuário logado}
 ```
 
 ---
+
+## Release Notes - v1.0.0
+
+Full Changelog: https://github.com/lfo1985/travel-orders/commits/v1.0.0
 
 ## Licença
 
