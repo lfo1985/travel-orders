@@ -935,3 +935,6 @@
 #41 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(23): require_once('/var/www/html/p...')
 #42 {main}
 "} 
+[2025-04-14 11:09:09] local.ERROR: App\Services\Order\OrderService::updateOrder(): Argument #2 ($authId) must be of type int, null given, called in /var/www/html/app/Http/Controllers/OrderController.php on line 72  
+[2025-04-14 11:09:55] local.ERROR: You can only edit or delete your own orders.  
+[2025-04-14 11:10:28] local.ERROR: You can only edit or delete your own orders.  

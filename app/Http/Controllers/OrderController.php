@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\StatusOrderEnum;
 use App\Exceptions\OrderNotFoundException;
+use App\Exceptions\UpdateDeleteOrderException;
 use App\Exceptions\UpdateOrderStatusUnauthorizedException;
 use App\Exceptions\UpdateStatusOrderFailedException;
 use App\Http\Requests\StoreOrderRequest;
@@ -68,10 +69,11 @@ class OrderController extends Controller
     public function update(UpdateOrderRequest $request, int $id)
     {
         try {
-            $this->orderService->updateOrder($id, $request->validated());
+            $authId = $request->headers->get('auth_id');
+            $this->orderService->updateOrder($id, $authId, $request->validated());
 
             return sendSuccess(200, 'Order updated successfully.');
-        } catch (OrderNotFoundException $e) {
+        } catch (OrderNotFoundException | UpdateDeleteOrderException $e) {
             return sendError($e->getCode(), $e->getMessage());
         } catch (\Throwable $th) {
             Log::error($th->getMessage());
@@ -82,13 +84,14 @@ class OrderController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(int $id)
+    public function destroy(int $id, Request $request)
     {
         try {
-            $this->orderService->deleteOrder($id);
+            $authId = $request->headers->get('auth_id');
+            $this->orderService->deleteOrder($id, $authId);
 
             return sendSuccess(200, 'Order deleted successfully.');
-        } catch (OrderNotFoundException $e) {
+        } catch (OrderNotFoundException | UpdateDeleteOrderException $e) {
             return sendError($e->getCode(), $e->getMessage());
         } catch (\Throwable $th) {
             Log::error($th->getMessage());

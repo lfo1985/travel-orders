@@ -192,7 +192,12 @@ php artisan db:seed --class=OrderSeeder
 ### Editar pedido
 
 **PUT** `/order/{id}`  
-**Headers:** `Authorization: Bearer {token}`
+**Headers**
+
+```
+Authorization: Bearer {token}
+auth_id: {id do usuário logado}
+```
 
 **Body:**
 
@@ -208,8 +213,13 @@ php artisan db:seed --class=OrderSeeder
 
 ### Deletar pedido
 
-**DELETE** `/order/{id}`  
-**Headers:** `Authorization: Bearer {token}`
+**DELETE** `/order/{id}`
+**Headers**
+
+```
+Authorization: Bearer {token}
+auth_id: {id do usuário logado}
+```
 
 ---
 

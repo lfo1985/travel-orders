@@ -94,7 +94,7 @@ class OrderServiceTest extends TestCase
         $mockOrderRepository->method('update')->willReturn(new Order($orderData));
 
         $orderService = new OrderService($mockOrderRepository);
-        $order = $orderService->updateOrder(1, $orderData);
+        $order = $orderService->updateOrder(1, 1, $orderData);
 
         $this->assertNotNull($order);
         $this->assertEquals(1, $order->user_id);
@@ -115,7 +115,7 @@ class OrderServiceTest extends TestCase
         $this->expectExceptionMessage('Order not found.');
         $this->expectExceptionCode(404);
 
-        $orderService->updateOrder(999, []);
+        $orderService->updateOrder(999, 1, []);
     }
 
     public function test_return_success_where_order_deleted(): void
@@ -132,7 +132,7 @@ class OrderServiceTest extends TestCase
         $mockOrderRepository->method('delete')->willReturn(true);
 
         $orderService = new OrderService($mockOrderRepository);
-        $result = $orderService->deleteOrder(1);
+        $result = $orderService->deleteOrder(1, 1);
 
         $this->assertTrue($result);
     }
@@ -148,7 +148,7 @@ class OrderServiceTest extends TestCase
         $this->expectExceptionMessage('Order not found.');
         $this->expectExceptionCode(404);
 
-        $orderService->deleteOrder(999);
+        $orderService->deleteOrder(999, 1);
     }
 
     public function test_return_collection_where_success_in_the_get_all_orders(): void

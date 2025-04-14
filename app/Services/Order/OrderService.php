@@ -4,6 +4,7 @@ namespace App\Services\Order;
 
 use App\Enums\StatusOrderEnum;
 use App\Exceptions\OrderNotFoundException;
+use App\Exceptions\UpdateDeleteOrderException;
 use App\Exceptions\UpdateOrderStatusUnauthorizedException;
 use App\Exceptions\UpdateStatusOrderFailedException;
 use App\Models\Order;
@@ -55,11 +56,12 @@ class OrderService
      * @return Order
      * @throws OrderNotFoundException
      */
-    public function updateOrder(int $id, array $data): Order
+    public function updateOrder(int $id, int $authId,  array $data): Order
     {
         $order = $this->orderRepository->getById($id);
-        
+
         $this->checkOrderExists($order);
+        $this->checkAuth($order, $authId);
 
         return $this->orderRepository->update($id, $data);
     }
@@ -71,11 +73,12 @@ class OrderService
      * @return bool
      * @throws OrderNotFoundException
      */
-    public function deleteOrder(int $id): bool
+    public function deleteOrder(int $id, int $authId): bool
     {
         $order = $this->orderRepository->getById($id);
 
         $this->checkOrderExists($order);
+        $this->checkAuth($order, $authId);
 
         return $this->orderRepository->delete($order->id);
     }
@@ -88,7 +91,7 @@ class OrderService
     public function getAllOrders(Request $request): object
     {
         $filters = $this->filterOrders($request);
-        
+
         return $this->orderRepository->getAll($filters);
     }
 
@@ -139,24 +142,35 @@ class OrderService
     {
         $this->checkOrderExists($order);
 
-        if(!$authId) {
+        if (!$authId) {
             throw new UpdateOrderStatusUnauthorizedException('You are not authorized to update this order', 401);
         }
 
-        if(data_get($order, 'user_id') === $authId) {
-            throw new UpdateOrderStatusUnauthorizedException('You cannot update your own order', 400);
+        if (data_get($order, 'user_id') === $authId) {
+            throw new UpdateOrderStatusUnauthorizedException('You cannot update your own order', 403);
         }
 
-        if(data_get($status, 'value') === StatusOrderEnum::REQUESTED->value) {
+        if (data_get($status, 'value') === StatusOrderEnum::REQUESTED->value) {
             throw new UpdateStatusOrderFailedException('You can only update the order if the status is being changed to CANCELED or APPROVED', 400);
         }
 
-        if(data_get($order, 'status.value') === data_get($status, 'value')) {
+        if (data_get($order, 'status.value') === data_get($status, 'value')) {
             throw new UpdateStatusOrderFailedException('You cannot update the order to the same status', 400);
         }
 
-        if(data_get($order, 'status.value') === StatusOrderEnum::APPROVED->value && data_get($status, 'value') === StatusOrderEnum::CANCELED->value) {
+        if (data_get($order, 'status.value') === StatusOrderEnum::APPROVED->value && data_get($status, 'value') === StatusOrderEnum::CANCELED->value) {
             throw new UpdateStatusOrderFailedException('You cannot to CANCEL the order if the status is APPROVED', 400);
+        }
+    }
+
+    public function checkAuth($order, int $authId)
+    {
+        if (!$authId) {
+            throw new UpdateOrderStatusUnauthorizedException('You are not authorized to update this order', 401);
+        }
+
+        if (data_get($order, 'user_id') !== $authId) {
+            throw new UpdateDeleteOrderException('You can only edit or delete your own orders.', 403);
         }
     }
 
@@ -171,7 +185,7 @@ class OrderService
     {
         if (!$order) {
             throw new OrderNotFoundException('Order not found.', 404);
-        }   
+        }
         return true;
     }
 
