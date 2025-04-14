@@ -1,9 +1,4 @@
-Aqui está a versão final do seu `README.md` com a **versão 1.0.0** e uma seção de **Licença (MIT)** adicionada no final. Tudo pronto para copiar e colar no seu repositório:
-
----
-
-```markdown
-# 📦 Travel Orders
+# Travel Orders
 
 **Versão:** 1.0.0  
 Aplicação voltada para o gerenciamento de pedidos de viagens, oferecendo recursos como autenticação de usuários, controle de acesso e mecanismos de filtragem por status, destino e períodos de viagem.
@@ -80,7 +75,7 @@ Authorization: Bearer {token}
 
 ---
 
-## 👤 Endpoints de Usuários
+## Endpoints de Usuários
 
 ### Listar todos os usuários
 
@@ -242,7 +237,7 @@ auth_id: {id do usuário logado}
 
 ---
 
-## 📄 Licença
+## Licença
 
 Este projeto está licenciado sob os termos da licença MIT.  
 Veja o arquivo [LICENSE](LICENSE) para mais informações.
