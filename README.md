@@ -45,6 +45,16 @@ Para popular a base com pedidos de viagem fictícios:
 php artisan db:seed --class=OrderSeeder
 ```
 
+---
+
+### Rodar os testes unitários
+
+```bash
+php artisan test
+```
+
+---
+
 > **IMPORTANTE:** Todos os comandos acima devem ser executados **dentro do container**, pois o sistema está configurado para rodar via Docker.
 
 ---
